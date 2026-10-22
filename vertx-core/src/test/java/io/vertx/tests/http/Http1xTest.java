@@ -6061,11 +6061,14 @@ public class Http1xTest extends HttpTest {
         Promise<Void> promise = Promise.promise();
         response.handler(chunk -> {
           response.pause();
-          request.reset();
-          vertx.setTimer(100, id -> {
-            promise.succeed();
-          });
+          request.reset().onComplete(TestUtils.onSuccess(v -> {
+            vertx.setTimer(100, id -> {
+              promise.succeed();
+            });
+          }));
         });
+        response.pause();
+        response.fetch(1);
         return promise.future();
       }));
   }
